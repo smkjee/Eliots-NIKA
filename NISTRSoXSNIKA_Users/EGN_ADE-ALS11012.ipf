@@ -3754,7 +3754,343 @@ function StartSwitchNika()
 	CheckBox AutoPickQ,variable=root:Packages:SwitchNIKA:AutopickQ
 End
 
-function PolarizationTopGraph([name,normtoFirstEn])
+//function PolarizationTopGraph([name,normtoFirstEn])
+//	// look at the top graph, and finds groups of 2-8 exposures (horizontal (left/right) and vertical (up down) and different polarizations) and calculates the A profile
+//	string name
+//	variable normtoFirstEn
+//	normtoFirstEn = paramisdefault(normtoFirstEn) ? 0 : normtoFirstEn
+//	string foldersave = getdatafolder(1)
+//	setdatafolder root:
+//	newdatafolder /o/s Packages
+//	newdatafolder /o/s PolarizationCalcs
+//	string windowname = winname(0,1)
+//	string tracelist = tracenamelist(windowname,";",1)
+//	tracelist = sortlist(tracelist)
+//	variable num = itemsinlist(tracelist)
+//	make /wave /free /n=(num) waves=tracenametowaveref(windowname,stringfromlist(p,tracelist))
+//	make /wave /free /n=(num) xwaves=xwavereffromtrace(windowname,stringfromlist(p,tracelist))
+//	variable j,groupnum, minq, maxq
+//	string basename, tracename, grouplist, wnote
+//	variable hl,hr,hu,hd,vl,vr,vu,vd
+//	// get name for graph and folder
+//	tracename = stringfromlist(j,tracelist)
+//	if(paramisdefault(name))
+//		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
+//		if(strlen(basename)<1)
+//			basename = windowname
+//		endif
+//	else
+//		basename=name
+//	endif
+//	newdatafolder /o/s $basename
+//	string gname = Cleanupname(basename+"_Anisotropy",0)
+//	string imagename = Cleanupname(basename+"_ImagePlot",0)
+//	string avenname = Cleanupname(basename + "_vsEnergy",0)
+//	//dowindow /k $gname
+//	//display /k=1 /n=$gname as "Plot of Anisotropy for "+basename
+//	dowindow /k $avenname
+//	display /k=1 /n=$avenname as "Anisotropy vs Energy for "+basename
+//	dowindow /k $imagename
+//	display/W=(745.5,87.5,1098.75,404)/n=$imagename /k=1 as "Anisotropy vs Q and Energy for "+basename
+//	make /o/n=0 $Cleanupname(basename+"_Atot",1),$Cleanupname(basename+"_etot",1),$Cleanupname(basename+"_En",1)
+//	make /o/n=0 $Cleanupname(basename+"_Mesh",1)
+//	wave mesh = $Cleanupname(basename+"_Mesh",1)
+//	make /n=0/wave /free awaves, axwaves
+//	wave Atot = $Cleanupname(basename+"_Atot",1)
+//	wave etot = $Cleanupname(basename+"_etot",1)
+//	wave En = $Cleanupname(basename+"_En",1)
+//	variable index
+//	for(j=0;j<num;j+=1)
+//		tracename = stringfromlist(j,tracelist)
+//		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
+//		if(strlen(basename)<1)
+//			print "Tracename: \"" + tracename + "\" could not by parced"
+//			continue
+//		endif
+//		grouplist = greplist(tracelist,"^'?"+basename+".*_(90|180|270|0)_20'?$")
+//		groupnum = itemsinlist(grouplist)
+//		if(groupnum<2)
+//			continue
+//		endif
+//		j+= groupnum -1
+//		hd = whichlistitem(removeending(greplist(grouplist,"90_20'?$"),";"),tracelist)
+//		hl = whichlistitem(removeending(greplist(grouplist,"180_20'?$"),";"),tracelist)
+//		hu = whichlistitem(removeending(greplist(grouplist,"270_20'?$"),";"),tracelist)
+//		hr = whichlistitem(removeending(greplist(grouplist,"_0_20'?$"),";"),tracelist)
+//		vd = -1//whichlistitem(removeending(greplist(grouplist,"90_90_20'?$"),";"),tracelist)
+//		vl = -1//whichlistitem(removeending(greplist(grouplist,"90_180_20'?$"),";"),tracelist)
+//		vu = -1//whichlistitem(removeending(greplist(grouplist,"90_270_20'?$"),";"),tracelist)
+//		vr = -1//whichlistitem(removeending(greplist(grouplist,"90_360_20'?$"),";"),tracelist)
+//		// combine into average parallel and perpindicular r and q waves (largest range possible) for different polarizations
+//		if((hd<0 && hu<0) || (hr<0 && hl<0))
+//			// horizontal polarization is not complete, so skip it
+//		else
+//			make /o /n=1000 $cleanupname(basename+"_perph",1), $cleanupname(basename+"_perphx",1), $cleanupname(basename+"_parah",1), $cleanupname(basename+"_parahx",1)
+//			wave perph = $cleanupname(basename+"_perph",1)
+//			wave perphx = $cleanupname(basename+"_perphx",1)
+//			wave parah = $cleanupname(basename+"_parah",1)
+//			wave parahx = $cleanupname(basename+"_parahx",1)
+//			if(hd>=0)
+//				wave perph1 = waves[hd]
+//				wnote = note(perph1)
+//				wave perph1x = xwaves[hd]
+//				if(hu>=0)
+//					wave perph2 = waves[hu]
+//					wave perph2x = xwaves[hu]
+//					minq=min(wavemin(perph2x),wavemin(perph1x))
+//					maxq=max(wavemax(perph2x),wavemax(perph1x))
+//					
+//					setscale /i x,minq,maxq,perph, perphx
+//					perphx=x
+//					perph = x>=wavemin(perph1x) && x<=wavemax(perph1x) ? interp(x,perph1x,perph1) : 0
+//					perph += x>=wavemin(perph2x) && x<=wavemax(perph2x) ? interp(x,perph2x,perph2) : 0
+//					perph /= x>=wavemin(perph2x) && x<=wavemax(perph2x)  && x>=wavemin(perph1x) && x<=wavemax(perph1x) ? 2 : 1
+//				else
+//					minq=wavemin(perph1x)
+//					maxq=wavemax(perph1x)
+//					setscale /i x,minq,maxq,perph, perphx
+//					perphx = x
+//					perph =interp(x,perph1x,perph1)
+//				endif
+//			else
+//				wave perph1 = waves[hu]
+//				wnote = note(perph1)
+//				wave perph1x = xwaves[hu]
+//				minq=wavemin(perph1x)
+//				maxq=wavemax(perph1x)
+//				setscale /i x,minq,maxq,perph, perphx
+//				perphx = x
+//				perph =interp(x,perph1x,perph1)
+//			endif
+//			Note perph, wnote
+//			//appendtograph /w=gname perph /TN=$basename vs perphx
+//			if(hl>=0)
+//				wave parah1 = waves[hl]
+//				wave parah1x = xwaves[hl]
+//				if(hr>=0)
+//					wave parah2 = waves[hr]
+//					wave parah2x = xwaves[hr]
+//					minq=min(wavemin(parah2x),wavemin(parah1x))
+//					maxq=max(wavemax(parah2x),wavemax(parah1x))
+//					
+//					setscale /i x,minq,maxq,parah, parahx
+//					parahx=x
+//					parah = x>=wavemin(parah1x) && x<=wavemax(parah1x) ? interp(x,parah1x,parah1) : 0
+//					parah += x>=wavemin(parah2x) && x<=wavemax(parah2x) ? interp(x,parah2x,parah2) : 0
+//					parah /= x>=wavemin(parah2x) && x<=wavemax(parah2x)  && x>=wavemin(parah1x) && x<=wavemax(parah1x) ? 2 : 1
+//				else
+//					minq=wavemin(parah1x)
+//					maxq=wavemax(parah1x)
+//					setscale /i x,minq,maxq,parah, parahx
+//					parahx = x
+//					parah =interp(x,parah1x,parah1)
+//				endif
+//			else
+//				wave parah1 = waves[hr]
+//				wave parah1x = xwaves[hr]
+//				minq=wavemin(parah1x)
+//				maxq=wavemax(parah1x)
+//				setscale /i x,minq,maxq,parah, parahx
+//				parahx = x
+//				parah =interp(x,parah1x,parah1)
+//			endif
+//			Note parah, wnote
+//			//appendtograph /w=gname parah /TN=$basename vs parahx
+//		endif
+//		if((vr<0 && vl<0) || (vu<0 && vd<0))
+//			// vertical polarization is not complete, so skip it
+//		else
+//			make /o /n=1000 $cleanupname(basename+"_perpv",1), $cleanupname(basename+"_perpvx",1), $cleanupname(basename+"_parav",1), $cleanupname(basename+"_paravx",1)
+//			wave perpv = $cleanupname(basename+"_perpv",1)
+//			wave perpvx = $cleanupname(basename+"_perpvx",1)
+//			wave parav = $cleanupname(basename+"_parav",1)
+//			wave paravx = $cleanupname(basename+"_paravx",1)
+//			if(vr>=0)
+//				wave perpv1 = waves[vr]
+//				wnote = note(perpv1)
+//				wave perpv1x = xwaves[vr]
+//				if(vl>=0)
+//					wave perpv2 = waves[vl]
+//					wave perpv2x = xwaves[vl]
+//					minq=min(wavemin(perpv2x),wavemin(perpv1x))
+//					maxq=max(wavemax(perpv2x),wavemax(perpv1x))
+//					
+//					setscale /i x,minq,maxq,perpv, perpvx
+//					perpvx=x
+//					perpv = x>=wavemin(perpv1x) && x<=wavemax(perpv1x) ? interp(x,perpv1x,perpv1) : 0
+//					perpv += x>=wavemin(perpv2x) && x<=wavemax(perpv2x) ? interp(x,perpv2x,perpv2) : 0
+//					perpv /= x>=wavemin(perpv2x) && x<=wavemax(perpv2x)  && x>=wavemin(perpv1x) && x<=wavemax(perpv1x) ? 2 : 1
+//				else
+//					minq=wavemin(perpv1x)
+//					maxq=wavemax(perpv1x)
+//					setscale /i x,minq,maxq,perpv, perpvx
+//					perpvx = x
+//					perpv =interp(x,perpv1x,perpv1)
+//				endif
+//			else
+//				wave perpv1 = waves[vl]
+//				wnote = note(perpv1)
+//				wave perpv1x = xwaves[vl]
+//				minq=wavemin(perpv1x)
+//				maxq=wavemax(perpv1x)
+//				setscale /i x,minq,maxq,perpv, perpvx
+//				perpvx = x
+//				perpv =interp(x,perpv1x,perpv1)
+//			endif
+//			Note perpv, wnote
+//			
+//			//appendtograph /w=gname perpv /TN=$basename vs perpvx
+//			if(vd>=0)
+//				wave parav1 = waves[vd]
+//				wave parav1x = xwaves[vd]
+//				if(vu>=0)
+//					wave parav2 = waves[vu]
+//					wave parav2x = xwaves[vu]
+//					minq=min(wavemin(parav2x),wavemin(parav1x))
+//					maxq=max(wavemax(parav2x),wavemax(parav1x))
+//					
+//					setscale /i x,minq,maxq,parav, paravx
+//					paravx=x
+//					parav = x>=wavemin(parav1x) && x<=wavemax(parav1x) ? interp(x,parav1x,parav1) : 0
+//					parav += x>=wavemin(parav2x) && x<=wavemax(parav2x) ? interp(x,parav2x,parav2) : 0
+//					parav /= x>=wavemin(parav2x) && x<=wavemax(parav2x)  && x>=wavemin(parav1x) && x<=wavemax(parav1x) ? 2 : 1
+//				else
+//					minq=wavemin(parav1x)
+//					maxq=wavemax(parav1x)
+//					setscale /i x,minq,maxq,parav, paravx
+//					paravx = x
+//					parav =interp(x,parav1x,parav1)
+//				endif
+//			else
+//				wave parav1 = waves[vu]
+//				wave parav1x = xwaves[vu]
+//				minq=wavemin(parav1x)
+//				maxq=wavemax(parav1x)
+//				setscale /i x,minq,maxq,parav, paravx
+//				paravx = x
+//				parav =interp(x,parav1x,parav1)
+//			endif
+//			Note parav, wnote
+//			//appendtograph /w=gname parav /TN=$basename vs paravx
+//		endif
+//		
+//		// use the parallel and perpindicular waves to calculate A (anisotropy) for each polarization, then average as possible to create a single A
+//		
+//		if(waveexists(parah) &&waveexists(perph))
+//			make /o/n=1000 $cleanupname(basename+"_Ah",1), $cleanupname(basename+"_Ahx",1)
+//			wave Ah = $cleanupname(basename+"_Ah",1)
+//			wave Ahx = $cleanupname(basename+"_Ahx",1)
+//			minq=max(wavemin(parahx),wavemin(perphx))
+//			maxq = min(wavemax(parahx),wavemax(perphx))
+//			setscale /i x,minq,maxq, Ah, Ahx
+//			Ahx = x
+//			Ah = (interp(Ahx,parahx,parah) - interp(Ahx,perphx,perph))/(interp(Ahx,parahx,parah) + interp(Ahx,perphx,perph))
+//			duplicate /o Ah,  $cleanupname(basename+"_A",1)
+//			duplicate /o Ahx, $cleanupname(basename+"_Ax",1)
+//			wave A = $cleanupname(basename+"_A",1)
+//			wave Ax = $cleanupname(basename+"_Ax",1)
+//		endif
+//		if(waveexists(parav) && waveexists(perpv))
+//			make /o/n=1000 $cleanupname(basename+"_Av",1), $cleanupname(basename+"_Avx",1)
+//			wave Av = $cleanupname(basename+"_Av",1)
+//			wave Avx = $cleanupname(basename+"_Avx",1)
+//			minq=max(wavemin(paravx),wavemin(perpvx))
+//			maxq = min(wavemax(paravx),wavemax(perpvx))
+//			setscale /i x,minq,maxq, Av, Avx
+//			Avx = x
+//			Av = (interp(Avx,paravx,parav) - interp(Avx,perpvx,perpv))/(interp(Avx,paravx,parav) + interp(Avx,perpvx,perpv))
+//			if(waveexists(A))
+//				minq=min(wavemin(Avx),wavemin(Ahx))
+//				maxq=max(wavemax(Avx),wavemax(Ahx))
+//				setscale /i x,minq,maxq, A,Ax
+//				Ax=x
+//				A = x>=wavemin(Avx) && x<=wavemax(Avx) ? interp(x,Avx,Av) : 0
+//				A+=x>=wavemin(Ahx) && x<=wavemax(Ahx) ? interp(x,Ahx,Ah) : 0
+//				A /= x>=wavemin(Ahx) && x<=wavemax(Ahx) && x>=wavemin(Avx) && x<=wavemax(Avx) ? 2 : 1
+//			else
+//				duplicate /o Av,$cleanupname(basename+"_A",1)
+//				duplicate /o Avx,$cleanupname(basename+"_Ax",1)
+//				wave A = $cleanupname(basename+"_A",1)
+//				wave Ax = $cleanupname(basename+"_Ax",1)
+//			endif
+//		endif
+//		note A, wnote
+//		note Ax, wnote
+//		//  Plot all of the As together on a new graph
+//		//appendtograph /w=$gname A /TN=$basename vs Ax
+//		
+//		// integrate As and plot vs energy (for only certain q range?)
+//		index = dimsize(Atot,0)
+//		insertpoints index,1,Atot,etot,En,awaves, axwaves
+//		duplicate/free A, smA
+//		smooth /s=4 101,smA
+//		smA-=A
+//		Atot[index] = mean(A)
+//		etot[index] = sqrt(Variance(smA))
+//		smooth /s=4 51,A
+//		string enstring
+//		splitstring /e="([^_]*)eV" nameofwave(A), enstring
+//		En[index] = str2num(enstring)
+//		Awaves[index] = $getwavesdatafolder(A,2)
+//		Axwaves[index] = $getwavesdatafolder(Ax,2)
+//		killwaves /z asdf
+//		wave /z A = asdf
+//		wave /z Ax = asdf
+//		wave /z perph = asdf
+//		wave /z perphx = asdf
+//		wave /z parah = asdf
+//		wave /z parahx = asdf
+//		wave /z perpv = asdf
+//		wave /z perpvx = asdf
+//		wave /z parav = asdf
+//		wave /z paravx = asdf
+//	endfor
+//	// make energy vs anisotropy vs q imageplot
+//	sort En, Atot, En, Awaves, Axwaves, etot
+//	minq = 0
+//	maxq = 100000
+//	for(j=0;j<index;j+=1)
+//		minq = max(wavemin(Axwaves[j]),minq)
+//		maxq = min(wavemax(Axwaves[j]),maxq)
+//	endfor
+//	make /free/n=(index,200) UnScaledMesh
+//	redimension /n=(200,200) Mesh
+//	setscale /i y,minq,maxq,UnScaledMesh
+//	setscale /i x,minq,maxq, Mesh
+//	for(j=0;j<index;j+=1)
+//		wave tempx = Axwaves[j]
+//		wave temp = Awaves[j]
+//		unscaledMesh[j][] = interp(y,tempx,temp)
+//	endfor
+//	make /n=(index) /free tempwave
+//	setscale /i y,en[0],en[index],Mesh
+//	for(j=0;j<200;j+=1)
+//		tempwave = unscaledMesh[p][j]
+//		mesh[j][] = interp(y,en,tempwave)
+//	endfor
+//	if(normtoFirstEn)
+//		wave tempx = Axwaves[0]
+//		wave temp = Awaves[0]
+//		mesh[][] -= interp(x,tempx,temp)
+//	endif
+//	appendimage /w=$imagename/T mesh
+//	ModifyImage /w=$imagename ''#0 ctab= {-0.5,0.5,RedWhiteBlue,0}
+//	ModifyGraph /w=$imagename margin(left)=47,margin(bottom)=14,margin(top)=44,margin(right)=71,log(top)=1
+//	ModifyGraph /w=$imagename mirror=2, minor=1, fSize=14, standoff=0, tkLblRot(left)=90, btLen=3, tlOffset=-2
+//	Label /w=$imagename left "X-ray Energy [eV]"
+//	Label /w=$imagename top "Momentum Transfer q [nm\\S-1\\M]"
+//	SetAxis/A/R /w=$imagename left
+//	ColorScale /w=$imagename/C/N=text0/F=0/S=3/A=RC/X=0/Y=0/E image=''#0
+//	AppendText "Anisotropy"
+//	
+//	appendtograph /w=$avenname  Atot /tn=Atot vs En
+//	ModifyGraph /w=$avenname mode=4,marker=19,rgb=(0,0,0)
+//	ErrorBars /w=$avenname Atot,Y wave=(etot,etot)//SHADE= {0,0,(0,0,0,0),(0,0,0,0)}
+//	SetAxis /w=$avenname left -0.2,0.2
+//	setdatafolder foldersave
+//end
+
+function PolarizationTopGraph([name,normtoFirstEn])		//SUBH copied from old ADE_ALS11012
 	// look at the top graph, and finds groups of 2-8 exposures (horizontal (left/right) and vertical (up down) and different polarizations) and calculates the A profile
 	string name
 	variable normtoFirstEn
@@ -3775,23 +4111,25 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	// get name for graph and folder
 	tracename = stringfromlist(j,tracelist)
 	if(paramisdefault(name))
-		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
+		splitstring /e="^'?(.*)[^_]{3,5}_1?[90]0_(90|180|270|0)_20'?$" tracename,basename        //Subh changed 360 to 0
 		if(strlen(basename)<1)
 			basename = windowname
 		endif
 	else
 		basename=name
 	endif
+	basename = windowname		//SUBH inserted
 	newdatafolder /o/s $basename
+	
 	string gname = Cleanupname(basename+"_Anisotropy",0)
 	string imagename = Cleanupname(basename+"_ImagePlot",0)
 	string avenname = Cleanupname(basename + "_vsEnergy",0)
 	//dowindow /k $gname
 	//display /k=1 /n=$gname as "Plot of Anisotropy for "+basename
 	dowindow /k $avenname
-	display /k=1 /n=$avenname as "Anisotropy vs Energy for "+basename
+	display /k=1 /n=$avenname as "Anisotropy vs Energy for "+windowname
 	dowindow /k $imagename
-	display/W=(745.5,87.5,1098.75,404)/n=$imagename /k=1 as "Anisotropy vs Q and Energy for "+basename
+	display/W=(745.5,87.5,1098.75,404)/n=$imagename /k=1 as "Anisotropy vs Q and Energy for "+windowname
 	make /o/n=0 $Cleanupname(basename+"_Atot",1),$Cleanupname(basename+"_etot",1),$Cleanupname(basename+"_En",1)
 	make /o/n=0 $Cleanupname(basename+"_Mesh",1)
 	wave mesh = $Cleanupname(basename+"_Mesh",1)
@@ -3802,25 +4140,25 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	variable index
 	for(j=0;j<num;j+=1)
 		tracename = stringfromlist(j,tracelist)
-		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
+		splitstring /e="^'?(.*)_1?[90]0_(90|180|270|0)_20'?$" tracename,basename
 		if(strlen(basename)<1)
 			print "Tracename: \"" + tracename + "\" could not by parced"
 			continue
 		endif
-		grouplist = greplist(tracelist,"^'?"+basename+".*_(90|180|270|0)_20'?$")
+		grouplist = greplist(tracelist,"^'?"+basename+"_1?[90]0_(90|180|270|0)_20'?$")
 		groupnum = itemsinlist(grouplist)
 		if(groupnum<2)
 			continue
 		endif
 		j+= groupnum -1
-		hd = whichlistitem(removeending(greplist(grouplist,"90_20'?$"),";"),tracelist)
-		hl = whichlistitem(removeending(greplist(grouplist,"180_20'?$"),";"),tracelist)
-		hu = whichlistitem(removeending(greplist(grouplist,"270_20'?$"),";"),tracelist)
-		hr = whichlistitem(removeending(greplist(grouplist,"_0_20'?$"),";"),tracelist)
-		vd = -1//whichlistitem(removeending(greplist(grouplist,"90_90_20'?$"),";"),tracelist)
-		vl = -1//whichlistitem(removeending(greplist(grouplist,"90_180_20'?$"),";"),tracelist)
-		vu = -1//whichlistitem(removeending(greplist(grouplist,"90_270_20'?$"),";"),tracelist)
-		vr = -1//whichlistitem(removeending(greplist(grouplist,"90_360_20'?$"),";"),tracelist)
+		hd = whichlistitem(removeending(greplist(grouplist,"00_90_20'?$"),";"),tracelist)
+		hl = whichlistitem(removeending(greplist(grouplist,"00_180_20'?$"),";"),tracelist)
+		hu = whichlistitem(removeending(greplist(grouplist,"00_270_20'?$"),";"),tracelist)
+		hr = whichlistitem(removeending(greplist(grouplist,"00_0_20'?$"),";"),tracelist)
+		vd = whichlistitem(removeending(greplist(grouplist,"90_90_20'?$"),";"),tracelist)
+		vl = whichlistitem(removeending(greplist(grouplist,"90_180_20'?$"),";"),tracelist)
+		vu = whichlistitem(removeending(greplist(grouplist,"90_270_20'?$"),";"),tracelist)
+		vr = whichlistitem(removeending(greplist(grouplist,"90_0_20'?$"),";"),tracelist)
 		// combine into average parallel and perpindicular r and q waves (largest range possible) for different polarizations
 		if((hd<0 && hu<0) || (hr<0 && hl<0))
 			// horizontal polarization is not complete, so skip it
@@ -3984,7 +4322,7 @@ function PolarizationTopGraph([name,normtoFirstEn])
 			maxq = min(wavemax(parahx),wavemax(perphx))
 			setscale /i x,minq,maxq, Ah, Ahx
 			Ahx = x
-			Ah = (interp(Ahx,parahx,parah) - interp(Ahx,perphx,perph))/(interp(Ahx,parahx,parah) + interp(Ahx,perphx,perph))
+			Ah = (interp(Ahx,parahx,parah) - interp(Ahx,perphx,perph))/(interp(Ahx,parahx,parah) + interp(Ahx,perphx,perph))			//Subh edit: inverted anisotropy definition
 			duplicate /o Ah,  $cleanupname(basename+"_A",1)
 			duplicate /o Ahx, $cleanupname(basename+"_Ax",1)
 			wave A = $cleanupname(basename+"_A",1)
@@ -3998,7 +4336,7 @@ function PolarizationTopGraph([name,normtoFirstEn])
 			maxq = min(wavemax(paravx),wavemax(perpvx))
 			setscale /i x,minq,maxq, Av, Avx
 			Avx = x
-			Av = (interp(Avx,paravx,parav) - interp(Avx,perpvx,perpv))/(interp(Avx,paravx,parav) + interp(Avx,perpvx,perpv))
+			Av = (interp(Avx,paravx,parav) - interp(Avx,perpvx,perpv))/(interp(Avx,paravx,parav) + interp(Avx,perpvx,perpv))			//Subh edit: inverted anisotropy definition
 			if(waveexists(A))
 				minq=min(wavemin(Avx),wavemin(Ahx))
 				maxq=max(wavemax(Avx),wavemax(Ahx))
@@ -4031,6 +4369,7 @@ function PolarizationTopGraph([name,normtoFirstEn])
 		string enstring
 		splitstring /e="([^_]*)eV" nameofwave(A), enstring
 		En[index] = str2num(enstring)
+//		En[index] = numberbykey("BeamlineEnergy",wnote,"=",";")
 		Awaves[index] = $getwavesdatafolder(A,2)
 		Axwaves[index] = $getwavesdatafolder(Ax,2)
 		killwaves /z asdf
@@ -4089,6 +4428,7 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	SetAxis /w=$avenname left -0.2,0.2
 	setdatafolder foldersave
 end
+
 
 Window GroupPlotWin() : Panel
 	PauseUpdate; Silent 1		// building window...
