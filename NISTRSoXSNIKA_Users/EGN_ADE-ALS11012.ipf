@@ -4118,7 +4118,8 @@ function PolarizationTopGraph([name,normtoFirstEn])		//SUBH copied from old ADE_
 	else
 		basename=name
 	endif
-	basename = windowname		//SUBH inserted
+	splitstring /e="plot_(.*)" windowname, basename
+//	basename = windowname		//SUBH inserted
 	newdatafolder /o/s $basename
 	
 	string gname = Cleanupname(basename+"_Anisotropy",0)
@@ -4423,9 +4424,10 @@ function PolarizationTopGraph([name,normtoFirstEn])		//SUBH copied from old ADE_
 	AppendText "Anisotropy"
 	
 	appendtograph /w=$avenname  Atot /tn=Atot vs En
-	ModifyGraph /w=$avenname mode=4,marker=19,rgb=(0,0,0)
+	ModifyGraph /w=$avenname mode=4,marker=19,rgb=(0,0,0),tick=2,mirror=1
 	ErrorBars /w=$avenname Atot,Y wave=(etot,etot)//SHADE= {0,0,(0,0,0,0),(0,0,0,0)}
-	SetAxis /w=$avenname left -0.2,0.2
+	SetAxis /w=$avenname left -0.5,0.5
+	Label /w=$avenname left "A(energy)",Label /w=$avenname bottom "X-ray energy (eV)"
 	setdatafolder foldersave
 end
 
